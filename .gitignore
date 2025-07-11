@@ -1,0 +1,54 @@
+# VSCode
+.vscode/
+
+# Build directories
+/build/
+*/build/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# Precompiled headers
+*.gch/
+*.pch/
+
+# Compiled Object files
+*.o
+*.obj
+
+# Static Libraries
+*.a
+*.lib
+
+# Shared libraries (e.g. Windows DLLs, Linux .so)
+*.so
+*.dll
+
+# Executables
+*.exe
+*[_-][dD]ebug*
+*[_-][rR]elease*
+*[_-][pP]rofile*
+*[_-][tT]est*
+
+# IDE specific
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.log
+*.ilk
+*.pdb
+*.ipdb
+*.iobj
+
+# OS generated
+.DS_Store
+Thumbs.db
+desktop.ini
