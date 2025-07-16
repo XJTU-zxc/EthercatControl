@@ -7,14 +7,14 @@
 #include "InterpData.h"
 #include "SCurvePlanner.h"
 
-
-class InterpMotionBlock {
+class InterpMotionBlock
+{
 public:
-    InterpMotionBlock() : hasPlan(false){}
+    InterpMotionBlock() : hasPlan(false) {}
 
     bool Plan()
     {
-        float nm = am / (PMC_J*PMC_T);
+        float nm = am / (PMC_J * PMC_T);
         sp.Plan(dist, vs, vm, ve, PMC_J, nm, PMC_T);
         hasPlan = true;
         return true;
@@ -22,15 +22,22 @@ public:
 
     bool Execute()
     {
-        if (this->type == INTERP_TYPE_LINE) {
+        if (this->type == INTERP_TYPE_LINE)
+        {
             /* 执行直线插补 */
-            if (sp.IsExecuteOk()) {return true;}
+            if (sp.IsExecuteOk())
+            {
+                return true;
+            }
             sp.Execute();
             return sp.IsExecuteOk();
-        } else {
+        }
+        else
+        {
             /* 执行圆弧插补 */
             // int rc = CircleInterp(1, this);
             // return rc == 0;
+            return false; // 圆弧插补未实现
         }
     }
 
@@ -44,9 +51,10 @@ public:
         return this->hasPlan;
     }
 
-    bool Init(InterpData* idata)
+    bool Init(InterpData *idata)
     {
-        if (idata->type == INTERP_TYPE_LINE) {
+        if (idata->type == INTERP_TYPE_LINE)
+        {
             /* 直线插补 */
             vs = idata->data.lineData.vs;
             vm = idata->data.lineData.vm;
@@ -54,7 +62,9 @@ public:
             ve = idata->data.lineData.ve;
             dist = idata->data.lineData.dist;
             memcpy(unitVec, idata->data.lineData.unitVec, sizeof(unitVec));
-        } else {
+        }
+        else
+        {
             /* 圆弧插补 */
             vm = idata->data.circleData.vm;
             am = idata->data.circleData.am;

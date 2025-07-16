@@ -67,7 +67,7 @@ typedef struct Compiler {
     int mestate;
 
     /* 字母映射表 */
-    char* charMap;
+    signed char* charMap;
 
     /* 状态转移矩阵 */
     int16_t (*stateMatrix)[COMPILER_STATE_MATRIX_COL];

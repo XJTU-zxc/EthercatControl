@@ -30,8 +30,8 @@ double g_params_vtn_puls_per_degree = 0;     // VTN 指令中每转一度需要�
 double g_params_vtn_init_pos = 0;            // 正切轴为 0° 时的位置,双精度浮点型wyf
 double circleParam[5] = {0, 0, 0, 0, 0};     // 圆心wyf  终点x, 终点y,  圆心x, 圆心y, 插补方向(顺时针2 逆时针 3)
 double compensate_params = 0.0;              // 补偿wyf
-extern double lastK = 0.0;                   // 初始弧度与上一次弧度wyf
-extern bool init_tan_K_flag = false;
+double lastK = 0.0;
+bool init_tan_K_flag = false;
 /* MOF MON 参数 */
 int16_t g_params_mof = 0;
 int16_t g_params_is_execute_prog = 0; // 程序是否执行

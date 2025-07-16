@@ -1113,7 +1113,7 @@ int Command__FLS(struct Compiler *compiler, struct StringWrapper *wrapper, bool 
     //     }
     // }
 
-    // return 0;
+    return 0;
 }
 
 int Command__RLS(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
@@ -1170,7 +1170,7 @@ int Command__RLS(struct Compiler *compiler, struct StringWrapper *wrapper, bool 
     //     }
     // }
 
-    // return 0;
+    return 0;
 }
 
 int Command_BGM(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
@@ -1334,7 +1334,6 @@ int Command_MVA(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
 {
     /* 参数位 */
     int16_t mask = 0;
-    int i = 0;
     /* 保存解析的参数 */
     int32_t value[8] = {0};
 
@@ -1379,14 +1378,14 @@ int Command_MVA(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     /* 记录要移动的距离 */
-    for (i = 0; i < 8; ++i)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
         int16_t bits = (mask & (1 << i));
         if (bits != 0)
         {
             g_axis_mvx_params[i].type = 1;
             g_axis_mvx_params[i].val = value[i];
-            std::cout << "slave_params[" << i << "].contour_velocity = " << value[i] << std::endl;
+            std::cout << "slave_params[" << i << "].targetPosition = " << value[i] << std::endl;
         }
     }
     /* 返回 ok 信息 */
@@ -1405,7 +1404,6 @@ int Command_MVR(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
 {
     /* 参数位 */
     int16_t mask = 0;
-    int i = 0;
     /* 保存解析的参数 */
     int32_t value[8] = {0};
 
@@ -1452,7 +1450,8 @@ int Command_MVR(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     /* 记录要移动的距离 */
-    for (i = 0; i < 8; ++i)
+    for (int i = 0; i < SLAVE_NUM; ++i)
+
     {
         int16_t bits = (mask & (1 << i));
         if (bits != 0)
@@ -1831,7 +1830,7 @@ int Command_MON(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     g_params_mof |= mask;
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
         int16_t bits = (mask & (1 << i));
         if (bits != 0)
@@ -1877,31 +1876,6 @@ int Command_MOF(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         g_params_tec = TEC_ERROR_GENERAL;
         return TEC_ERROR_GENERAL;
     }
-
-    // if (mask & 0x01) {
-    //     GPIO_writePin(103, 0);
-    // }
-    // if (mask & 0x02) {
-    //     GPIO_writePin(104, 0);
-    // }
-    // if (mask & 0x04) {
-    //     GPIO_writePin(95, 0);
-    // }
-    // if (mask & 0x08) {
-    //     GPIO_writePin(111, 0);
-    // }
-    // if (mask & 0x10) {
-    //     GPIO_writePin(30, 0);
-    // }
-    // if (mask & 0x20) {
-    //     GPIO_writePin(118, 0);
-    // }
-    // if (mask & 0x40) {
-    //     GPIO_writePin(117, 0);
-    // }
-    // if (mask & 0x80) {
-    //     GPIO_writePin(38, 0);
-    // }
 
     g_params_mof = g_params_mof ^ mask & g_params_mof;
 
@@ -2038,14 +2012,14 @@ int Command_VLI(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     long double dist = 0;
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
         dist += (long double)value[i] * (long double)value[i];
     }
 
     dist = sqrtl(dist);
     double k[8] = {0};
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
         int16_t bits = (mask & (1 << i));
         if (bits != 0)
@@ -2064,14 +2038,6 @@ int Command_VLI(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     {
         ipcLineData.unitVec[i] = k[i];
     }
-
-    // for(int i = 0; i < sizeof(struct IpcLineData)/sizeof(uint16_t); i++){
-    //     CPU1Send[i] = ((uint16_t *)&ipcLineData)[i];
-    //     dataUnion.array[i] = CPU1Send[i];
-    // }
-    /* 给CPU2发送消息 */
-    // CPU1SendMessageToCPU2(0,sizeof(struct IpcLineData)/sizeof(uint16_t));
-    // IPC_waitForAck(IPC_CPU1_L_CPU2_R, IPC_FLAG0);
     interpNum++;
     /* 返回 OK 消息 */
     if (isMdi)
@@ -2225,54 +2191,15 @@ int Command_MSP(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         g_params_tec = TEC_ERROR_MSP;
         return TEC_ERROR_MSP;
     }
-
-    if (mask & 0x01)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[0] = (float)value[0] / 9155 / 10000 * 60;
-        bpmParams.msp[0] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[0];
-        bpmParams.HasMspParam[0] = 1;
-    }
-    if (mask & 0x02)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[1] = (float)value[1] / 9155 / 10000 * 60;
-        bpmParams.msp[1] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[1];
-        bpmParams.HasMspParam[1] = 1;
-    }
-    if (mask & 0x04)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[2] = (float)value[2] / 9155 / 10000 * 60;
-        bpmParams.msp[2] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[2];
-        bpmParams.HasMspParam[2] = 1;
-    }
-    if (mask & 0x08)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[3] = (float)value[3] / 9155 / 10000 * 60;
-        bpmParams.msp[3] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[3];
-        bpmParams.HasMspParam[3] = 1;
-    }
-    if (mask & 0x10)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[4] = (float)value[4] / 9155 / 10000 * 60;
-        bpmParams.msp[4] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[4];
-        bpmParams.HasMspParam[4] = 1;
-    }
-    if (mask & 0x20)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[5] = (float)value[5] / 9155 / 10000 * 60;
-        bpmParams.msp[5] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[5];
-        bpmParams.HasMspParam[5] = 1;
-    }
-    if (mask & 0x40)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[6] = (float)value[6] / 9155 / 10000 * 60;
-        bpmParams.msp[6] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[6];
-        bpmParams.HasMspParam[6] = 1;
-    }
-    if (mask & 0x80)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[7] = (float)value[7] / 9155 / 10000 * 60;
-        bpmParams.msp[7] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[7];
-        bpmParams.HasMspParam[7] = 1;
+        int16_t bits = (mask & (1 << i));
+        if (bits != 0)
+        {
+            ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i] = (float)value[i] / 9155 / 10000 * 60;
+            bpmParams.msp[i] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i];
+            bpmParams.HasMspParam[i] = 1;
+        }
     }
 
     /* 返回 OK 消息 */
@@ -2305,54 +2232,15 @@ int Command_MAC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         g_params_tec = TEC_ERROR_MAC;
         return TEC_ERROR_MAC;
     }
-
-    if (mask & 0x01)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[0] = (float)value[0] / 9155 / 10000 * 60;
-        bpmParams.mac[0] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[0];
-        bpmParams.HasMacParam[0] = 1;
-    }
-    if (mask & 0x02)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[1] = (float)value[1] / 9155 / 10000 * 60;
-        bpmParams.mac[1] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[1];
-        bpmParams.HasMacParam[1] = 1;
-    }
-    if (mask & 0x04)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[2] = (float)value[2] / 9155 / 10000 * 60;
-        bpmParams.mac[2] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[2];
-        bpmParams.HasMacParam[2] = 1;
-    }
-    if (mask & 0x08)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[3] = (float)value[3] / 9155 / 10000 * 60;
-        bpmParams.mac[3] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[3];
-        bpmParams.HasMacParam[3] = 1;
-    }
-    if (mask & 0x10)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[4] = (float)value[4] / 9155 / 10000 * 60;
-        bpmParams.mac[4] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[4];
-        bpmParams.HasMacParam[4] = 1;
-    }
-    if (mask & 0x20)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[5] = (float)value[5] / 9155 / 10000 * 60;
-        bpmParams.mac[5] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[5];
-        bpmParams.HasMacParam[5] = 1;
-    }
-    if (mask & 0x40)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[6] = (float)value[6] / 9155 / 10000 * 60;
-        bpmParams.mac[6] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[6];
-        bpmParams.HasMacParam[6] = 1;
-    }
-    if (mask & 0x80)
-    {
-        ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[7] = (float)value[7] / 9155 / 10000 * 60;
-        bpmParams.mac[7] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[7];
-        bpmParams.HasMacParam[7] = 1;
+        int16_t bits = (mask & (1 << i));
+        if (bits != 0)
+        {
+            ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[i] = (float)value[i] / 9155 / 10000 * 60;
+            bpmParams.mac[i] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[i];
+            bpmParams.HasMacParam[i] = 1;
+        }
     }
 
     /* 返回 OK 消息 */
@@ -2464,8 +2352,8 @@ int Command_SET(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     //     else if(temp > 16 && temp <= 32)
     //         ThreeWordsReg.IOHigh |= (flag << (temp - 17));
 
-    //     CToMRegs.IOdata[0] = ThreeWordsReg.IOLow;
-    //     CToMRegs.IOdata[1] = ThreeWordsReg.IOHigh;
+        // CToMRegs.IOdata[0] = ThreeWordsReg.IOLow;
+        // CToMRegs.IOdata[1] = ThreeWordsReg.IOHigh;
 
     //     IPC_sendCommand(IPC_CPU1_L_CM_R, IPC_FLAG7, IPC_ADDR_CORRECTION_ENABLE, 1, 0, 2);
     //     IPC_setFlagLtoR(IPC_CPU1_L_CM_R, IPC_FLAG7);
@@ -2983,44 +2871,44 @@ int Command_VIE(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
 int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
 {
 
-    CStringAddRespOk(g_message_cpu2arm);
-    return 0;
-    // int16_t mask;
-    // int order[8] = {-1, -1, -1};
-    // int nbOrder = 0;
+    // CStringAddRespOk(g_message_cpu2arm);
+    // return 0;
+    int16_t mask;
+    int order[8] = {-1, -1, -1};
+    int nbOrder = 0;
 
-    // mask = ParseParams7(compiler, wrapper, order, &nbOrder);
-    // /* 参数解析失败 */
-    // if (mask == 0) {
-    //     if (isMdi) {
-    //         CStringAddRespFail(g_message_cpu2arm);
-    //     }
-    //     g_params_tec = TEC_ERROR_PROGRAM;
+    mask = ParseParams7(compiler, wrapper, order, &nbOrder);
+    /* 参数解析失败 */
+    if (mask == 0) {
+        if (isMdi) {
+            CStringAddRespFail(g_message_cpu2arm);
+        }
+        g_params_tec = TEC_ERROR_PROGRAM;
 
-    //     return TEC_ERROR_PROGRAM;
-    // }
+        return TEC_ERROR_PROGRAM;
+    }
 
-    // /* 如果轴正在运动，报错 */
-    // if (g_axis_is_running != 0 || g_params_interp_is_running != 0) {
-    //     if (isMdi) {
-    //         CStringAddRespFail(g_message_cpu2arm);
-    //     }
+    /* 如果轴正在运动，报错 */
+    if (g_axis_is_running != 0 || g_params_interp_is_running != 0) {
+        if (isMdi) {
+            CStringAddRespFail(g_message_cpu2arm);
+        }
 
-    //     /* 记录错误信息 */
-    //     g_params_tec = TEC_ERROR_PROGRAM;
-    //     return TEC_ERROR_PROGRAM;
-    // }
+        /* 记录错误信息 */
+        g_params_tec = TEC_ERROR_PROGRAM;
+        return TEC_ERROR_PROGRAM;
+    }
 
-    // /* 如果已经设置了 VIC ，报错 */
-    // if (g_params_interp_axis_enable != 0) {
-    //     if (isMdi) {
-    //         CStringAddRespFail(g_message_cpu2arm);
-    //     }
+    /* 如果已经设置了 VIC ，报错 */
+    if (g_params_interp_axis_enable != 0) {
+        if (isMdi) {
+            CStringAddRespFail(g_message_cpu2arm);
+        }
 
-    //     /* 记录错误信息 */
-    //     g_params_tec = TEC_ERROR_GENERAL;
-    //     return TEC_ERROR_GENERAL;
-    // }
+        /* 记录错误信息 */
+        g_params_tec = TEC_ERROR_GENERAL;
+        return TEC_ERROR_GENERAL;
+    }
 
     // /* 设置二维平面轴 */
     // if (nbOrder >= 2) {
@@ -3036,20 +2924,20 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     //     g_params_vtn_axis[2] = order[2];
     // }
 
-    // /* 使能插补轴 */
-    // g_params_interp_axis_enable = mask;
+    /* 使能插补轴 */
+    g_params_interp_axis_enable = mask;
 
-    // /* 检测是否进行了三轴联动，只有三轴情况下才可以实现正切wyf */
-    // if (nbOrder == 3) {
-    //     g_params_tangent_available = 1;
-    // }
+    /* 检测是否进行了三轴联动，只有三轴情况下才可以实现正切wyf */
+    if (nbOrder == 3) {
+        g_params_tangent_available = 1;
+    }
 
-    // /* 添加返回消息 */
-    // if (isMdi) {
-    //     CStringAddRespOk(g_message_cpu2arm);
-    // }
+    /* 添加返回消息 */
+    if (isMdi) {
+        CStringAddRespOk(g_message_cpu2arm);
+    }
 
-    // return 0;
+    return 0;
 }
 
 /* 逆时针圆弧 */
@@ -3442,7 +3330,7 @@ int Command_JOG(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         return TEC_ERROR_MVA;
     }
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < SLAVE_NUM; i++)
     {
         if (abs(value[i]) > 100000)
         {
@@ -4254,7 +4142,7 @@ int Command_MCM(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     // /*  清空wrapper */
     // wrapper->len = 0;
 
-    // return 0;
+    return 0;
 }
 
 int Command_GOTO(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
@@ -4311,7 +4199,7 @@ int Command_GOTO(struct Compiler *compiler, struct StringWrapper *wrapper, bool 
     // /*  清空wrapper */
     // wrapper->len = 0;
 
-    // return 0;
+    return 0;
 }
 
 int Command_END(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
@@ -4358,5 +4246,5 @@ int Command_SEN(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     // if(!isEmpty(mystack)){
     //     Pop(mystack,RunstatusRegs.codeFMHandle.readProgContentsAddress);
     // }
-    // return 0;
+    return 0;
 }

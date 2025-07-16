@@ -12,7 +12,7 @@
 #include "params.h"
 #include "InterpMotionBlock.h"
 
-#define TEST_SINGLE_AXIS_MOVE
+// #define TEST_SINGLE_AXIS_MOVE
 
 extern uint16_t glAxisLimit;
 
@@ -42,7 +42,7 @@ uint16_t MyRpdRun2(uint16_t cmdRun)
     uint16_t busy = 1;
 
     int i;
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < SLAVE_NUM; i++)
     {
         switch (phases[i])
         {
@@ -64,7 +64,7 @@ uint16_t MyRpdRun2(uint16_t cmdRun)
                 accAxises[i].run();
             }
 #else
-            accAxises[i].run(i);
+            accAxises[i].run();
 #endif
             /* 如果要输出正向脉冲并且当前没有正限位且没有STM停轴*/ /* 如果要输出负向脉冲并且当前没有负限位且没有STM停轴 */
             if (STMAxises[i] != 1 && ((accAxises[i].view.position > 0 && nowIfLimit[i * 2] != 1) || (accAxises[i].view.position < 0 && nowIfLimit[i * 2 + 1] != 1)))

@@ -105,6 +105,7 @@ int onConnectionInit(){
     respClient.bulkStack = CQInit(g_cqBuffer, 8 * sizeof(int) + sizeof(CircularQueue));
     // respClient.arg = tcpServer;
     respClient.ExecuteCommand = ExecuteCommand;
+    return 0;
 }
 
 /**

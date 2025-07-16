@@ -54,7 +54,7 @@ public:
 };
 
 
-typedef struct RESPMessage
+struct RESPMessage
 {
     /* data */
     int code;

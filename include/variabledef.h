@@ -11,7 +11,7 @@ extern "C" {
 // @author zxc
 // @brief define constants
 // @revision 1.0 by zxc on 2025-07-11
-#define SLAVE_NUM 8
+#define SLAVE_NUM 7
 // 定义每个轴的两个 bit 的索引位置（P/R）
 enum {
     LIMIT_XP = 0,

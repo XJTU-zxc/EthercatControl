@@ -28,7 +28,7 @@ uint16_t limit_io2 = 0;
 
 // for test by zxc
 int time_count = 0;
-
+extern bool motionFlag; // 是否通过IgH 接口输出EtherCAT数据
 // @author zxc
 // @brief Set Single Axis Limit State
 // @revision 1.0 by zxc on 2025-07-11
@@ -150,19 +150,17 @@ void print_pos_x_to_u(struct inter_pos *InterPos)
     // 打印第一行：x, y, z, a
     for (int i = 0; i < 4; ++i)
     {
-        PostionRegs.out_imp.pos_x &&PostionRegs.real_pos.pos_x;
         int32_t *value = (int32_t *)((char *)InterPos + offsets[i]);
         printf("[INFO] %s: %10d  ", names[i], *value);
     }
     printf("\n");
-
     // 打印第二行：b, c, w, u
     for (int i = 4; i < 8; ++i)
     {
         int32_t *value = (int32_t *)((char *)InterPos + offsets[i]);
         printf("[INFO] %s: %10d  ", names[i], *value);
     }
-    printf("\n");
+    printf("\n\n");
 }
 
 // 判断轴的位置是否发生了变化  zjq
@@ -334,9 +332,19 @@ void DealWith_4096us(void)
     }
 
     // 计算输出脉冲
+    motionFlag = false;
     for (size_t i = 0; i < SLAVE_NUM; i++)
     {
         *g_params_axisPulseData[i] = *g_params_axisRealPositionPtr[i] - *g_params_axisLastPulse[i];
+        if (*g_params_axisPulseData[i] != 0)
+        {
+            motionFlag = true; // 只要有一个脉冲数据大于0，就设置标志
+        }
+    }
+    if (motionFlag)
+    {
+        std::cout << "[INFO] 输出脉冲: " << PostionRegs.real_pos.pos_x << std::endl;
+        print_pos_x_to_u(&PostionRegs.out_imp);
     }
     // PostionRegs.out_imp.pos_x = PostionRegs.real_pos.pos_x - PostionRegs.real_posbk.pos_x;
     // PostionRegs.out_imp.pos_y = PostionRegs.real_pos.pos_y - PostionRegs.real_posbk.pos_y;
@@ -352,8 +360,6 @@ void DealWith_4096us(void)
         // 每0.4*250=100ms打印一次位置
         // std::cout<<"[INFO]零件坐标: "<<std::endl;
         // print_pos_x_to_u(&PostionRegs.LinPos);
-        std::cout << "[INFO] 输出脉冲: " << std::endl;
-        print_pos_x_to_u(&PostionRegs.out_imp);
         time_count = 0;
     }
 
