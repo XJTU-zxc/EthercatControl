@@ -11,6 +11,7 @@
 #include "MotionControl/motioncontrolparams.h"
 #include "ProgrammerControl/ProgrammerSystemParams.h"
 #include "ThreadSafeQueue.h"
+#include <cstring>
 
 ProgrammerBulk g_programmerBulk;
 SpeedFilterQueue g_speedFilterQueueA;
@@ -23,10 +24,10 @@ SpeedFilterQueue g_speedFilterQueueG;
 SpeedFilterQueue g_speedFilterQueueH;
 
 struct DataStorage dataStorage = {0};
-
 /* 线程安全队列 */
 ThreadSafeQueue<RespMessage> threadSafeQueue(50); // 接受上位机发送的消息
-ThreadSafeQueue<cstr> threadSafeQueue2(50);       // 返回消息给上位机
+ThreadSafeQueue<std::string> threadSafeQueue2(50); // 返回消息给上位机
+// ThreadSafeQueue<CommandResult> threadSafeQueue2(50);       // 返回消息给上位机
 /**
  * 初始化TCP，EtehrCAT，运动参数
  */
@@ -129,6 +130,8 @@ int handleThreeWords(RespMessage msg)
     //        /* 需要等待某些标志位，返回 */
     //        return 0;
     //    }
+    // 清空 g_message_cpu2arm
+    CStringClear(g_message_cpu2arm);
     if (msg.code == 0x4B)
     {
         /* 这是一条指令 */

@@ -1,7 +1,6 @@
 #include "command.h"
 
 #include <stdlib.h>
-#include <iostream>
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -21,8 +20,7 @@
 
 void delay2(int n)
 {
-    while (--n)
-        ;
+    while (--n);
 }
 /* STM参数，急停参数初始化 */
 int STM_EST_Lastlimit_ParamReset()
@@ -1298,7 +1296,7 @@ int Command_BGM(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     {                                                                                                /* 进入插补模式 */
         if (g_params_motion_mode == 1 ||                                                             /* 如果已经是插补模式，报错 */
             g_axis_is_running != 0 ||                                                                /* 如果轴正在进行运动，报错 */
-            g_params_interp_axis_enable == 0 ||                                                      /* 还未使能插补轴 */
+            g_params_interp_axis_enable == 0 ||                                                      /* 还未设置插补轴 */
             (~((g_params_interp_axis_enable & g_params_mof) ^ (~g_params_interp_axis_enable))) != 0) /* 如果插补轴未使能，报错 */
         {
             if (isMdi)
@@ -1385,7 +1383,7 @@ int Command_MVA(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         {
             g_axis_mvx_params[i].type = 1;
             g_axis_mvx_params[i].val = value[i];
-            std::cout << "slave_params[" << i << "].targetPosition = " << value[i] << std::endl;
+            printf("[SET] slave[%d].targetPosition.Abs = %d\n", i, value[i]);
         }
     }
     /* 返回 ok 信息 */
@@ -1458,9 +1456,9 @@ int Command_MVR(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         {
             g_axis_mvx_params[i].type = 2;
             g_axis_mvx_params[i].val = value[i];
+            printf("[SET] slave[%d].targetPosition.Rel = %d\n", i, value[i]);
         }
     }
-
     /* 返回 ok 信息 */
     if (isMdi)
     {
@@ -2018,7 +2016,7 @@ int Command_VLI(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     dist = sqrtl(dist);
-    double k[8] = {0};
+    double k[8] = {0}; // k为各插补轴的比例
     for (int i = 0; i < SLAVE_NUM; ++i)
     {
         int16_t bits = (mask & (1 << i));
@@ -2034,7 +2032,7 @@ int Command_VLI(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     ipcLineData.ve = 0;
     ipcLineData.am = g_params_vac * g_params_vac_coeff;
     ipcLineData.dist = dist;
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < SLAVE_NUM; i++)
     {
         ipcLineData.unitVec[i] = k[i];
     }
@@ -2199,6 +2197,8 @@ int Command_MSP(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
             ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i] = (float)value[i] / 9155 / 10000 * 60;
             bpmParams.msp[i] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i];
             bpmParams.HasMspParam[i] = 1;
+            printf("[SET] slave[%d].speed = %f\n", i, ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i]);
+
         }
     }
 
@@ -2240,6 +2240,7 @@ int Command_MAC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
             ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[i] = (float)value[i] / 9155 / 10000 * 60;
             bpmParams.mac[i] = ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[i];
             bpmParams.HasMacParam[i] = 1;
+            printf("[SET] slave[%d].acc = %f\n", i, ParamterUnRegs.ParamterRegs.AxisparmRegs.LineAcc[i]);
         }
     }
 
@@ -2870,9 +2871,6 @@ int Command_VIE(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
 
 int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
 {
-
-    // CStringAddRespOk(g_message_cpu2arm);
-    // return 0;
     int16_t mask;
     int order[8] = {-1, -1, -1};
     int nbOrder = 0;
@@ -2909,7 +2907,6 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         g_params_tec = TEC_ERROR_GENERAL;
         return TEC_ERROR_GENERAL;
     }
-
     // /* 设置二维平面轴 */
     // if (nbOrder >= 2) {
     //     g_params_plate_interp_axis[0] = order[0];
@@ -2926,6 +2923,12 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
 
     /* 使能插补轴 */
     g_params_interp_axis_enable = mask;
+    char map[8] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    if (order[2] == -1) {
+        printf("[INFO] 解析顺序为：%c, %c\n", map[order[0]], map[order[1]]);
+    } else {
+        printf("[INFO] 解析顺序为：%c, %c, %c\n", map[order[0]], map[order[1]], map[order[2]]);
+    }
 
     /* 检测是否进行了三轴联动，只有三轴情况下才可以实现正切wyf */
     if (nbOrder == 3) {

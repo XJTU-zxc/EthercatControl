@@ -7,7 +7,6 @@
 #include "params.h"
 #include "motioncontrolparams.h"
 #include "paramscpp.h"
-#include <iostream>
 #include "timer.h"
 
 uint16_t glExpZe = 0;
@@ -295,39 +294,42 @@ void DealWith_4096us(void)
         /* 后续放入背景程序中发送消息 */
         if (!g_interpDataQueue.IsFull() && interpNum != 0)
         {
-            // /* 给CPU2发送信号，发送插补数据过来 */
-            // CPU1SendMessageToCPU2(2,1);
-        }
-        /* 执行完成后会自动出队 */
-        g_interpMotionBuffer.Execute();
-        if ((g_interpMotionBuffer.IsEmpty() && interpNum == 0 && g_interpDataQueue.IsEmpty()))
-        {
-            /* 队列为空，重置状态wyf */
-            init_tan_K_flag = false;
-            /* 队列为空，没有进行插补运动 */
-            g_params_interp_is_running = 0;
+            InterpData *idata = g_interpDataQueue.Pop();
+            if (idata != NULL)
+            {
+                g_interpMotionBuffer.Push(idata);
+            }
+            /* 执行完成后会自动出队 */
+            g_interpMotionBuffer.Execute();
+            if ((g_interpMotionBuffer.IsEmpty() && interpNum == 0 && g_interpDataQueue.IsEmpty()))
+            {
+                /* 队列为空，重置状态wyf */
+                init_tan_K_flag = false;
+                /* 队列为空，没有进行插补运动 */
+                g_params_interp_is_running = 0;
 
-            /* 清空插补轴 */
-            g_params_interp_axis_enable = 0;
-            /* 结束正切模式wyf */
-            g_params_vtn_enable = 0;
-            /* 结束插补模式 */
-            g_params_motion_mode = 0;
-            /* 清空插补队列和缓冲队列中的数据 */
-            g_interpDataQueue.Clear();
-            g_interpMotionBuffer.Clear();
-            /* 给CPU2发送信号，停止发送插补数据过来 */
-            // interpNum = 0;
-            // CPU1SendMessageToCPU2(3, 1);
-            /* 清空平面轴信息 */
-            g_params_plate_interp_axis[0] = -1;
-            g_params_plate_interp_axis[1] = -1;
-            g_params_plate_interp_axis[2] = -1;
-        }
-        else
-        {
-            /* 如果队列中有数据，说明正在进行插补运动 */
-            g_params_interp_is_running = 1;
+                /* 清空插补轴 */
+                g_params_interp_axis_enable = 0;
+                /* 结束正切模式wyf */
+                g_params_vtn_enable = 0;
+                /* 结束插补模式 */
+                g_params_motion_mode = 0;
+                /* 清空插补队列和缓冲队列中的数据 */
+                g_interpDataQueue.Clear();
+                g_interpMotionBuffer.Clear();
+                /* 给CPU2发送信号，停止发送插补数据过来 */
+                // interpNum = 0;
+                // CPU1SendMessageToCPU2(3, 1);
+                /* 清空平面轴信息 */
+                g_params_plate_interp_axis[0] = -1;
+                g_params_plate_interp_axis[1] = -1;
+                g_params_plate_interp_axis[2] = -1;
+            }
+            else
+            {
+                /* 如果队列中有数据，说明正在进行插补运动 */
+                g_params_interp_is_running = 1;
+            }
         }
     }
 
@@ -343,7 +345,7 @@ void DealWith_4096us(void)
     }
     if (motionFlag)
     {
-        std::cout << "[INFO] 输出脉冲: " << PostionRegs.real_pos.pos_x << std::endl;
+        printf("[INFO] 输出脉冲: \n");
         print_pos_x_to_u(&PostionRegs.out_imp);
     }
     // PostionRegs.out_imp.pos_x = PostionRegs.real_pos.pos_x - PostionRegs.real_posbk.pos_x;
@@ -358,7 +360,7 @@ void DealWith_4096us(void)
     if (time_count % 100 == 0)
     {
         // 每0.4*250=100ms打印一次位置
-        // std::cout<<"[INFO]零件坐标: "<<std::endl;
+        // printf("[INFO] 零件坐标: \n");
         // print_pos_x_to_u(&PostionRegs.LinPos);
         time_count = 0;
     }
@@ -377,7 +379,6 @@ void DealWith_4096us(void)
     // 轴限位处理
     SetLimitState();
 }
-
 void delay(int n)
 {
     while (--n)

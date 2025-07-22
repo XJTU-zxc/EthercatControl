@@ -16,6 +16,7 @@ struct CString;
 struct CircularQueue;
 struct ZipArray;
 
+void CStringClear(char* s);
 /**
  * 将 string 转换成 int，成功返回1，失败返回0
  **/

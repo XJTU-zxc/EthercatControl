@@ -9,13 +9,13 @@
 #include <sys/types.h>
 #include <string>
 /** Task period in ns. */
-#define PERIOD_NS (2000000)
+#define PERIOD_NS (1000000)
 #define MAX_SAFE_STACK (8 * 1024)
 #define CLOCK_TO_USE CLOCK_REALTIME
 
 /* Constants */
 #define NSEC_PER_SEC (1000000000)
-#define FREQUENCY (NSEC_PER_SEC / PERIOD_NS) // 周期2ms
+#define FREQUENCY (NSEC_PER_SEC / PERIOD_NS) // 周期1ms
 
 /* Operation model */
 #define MOTOR_MODEL_CSP 8 // CSP同步周期位置模式0x08
