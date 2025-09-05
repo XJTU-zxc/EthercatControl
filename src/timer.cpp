@@ -338,16 +338,17 @@ void DealWith_4096us(void)
     for (size_t i = 0; i < SLAVE_NUM; i++)
     {
         *g_params_axisPulseData[i] = *g_params_axisRealPositionPtr[i] - *g_params_axisLastPulse[i];
+        // 用于调试以及后续判断是否输出数据到电机
         if (*g_params_axisPulseData[i] != 0)
         {
             motionFlag = true; // 只要有一个脉冲数据大于0，就设置标志
         }
     }
-    if (motionFlag)
-    {
-        printf("[INFO] 输出脉冲: \n");
-        print_pos_x_to_u(&PostionRegs.out_imp);
-    }
+    // if (motionFlag)
+    // {
+    //     printf("[INFO] 输出脉冲: \n");
+    //     print_pos_x_to_u(&PostionRegs.out_imp);
+    // }
     // PostionRegs.out_imp.pos_x = PostionRegs.real_pos.pos_x - PostionRegs.real_posbk.pos_x;
     // PostionRegs.out_imp.pos_y = PostionRegs.real_pos.pos_y - PostionRegs.real_posbk.pos_y;
     // PostionRegs.out_imp.pos_z = PostionRegs.real_pos.pos_z - PostionRegs.real_posbk.pos_z;
@@ -357,13 +358,13 @@ void DealWith_4096us(void)
     // PostionRegs.out_imp.pos_w = PostionRegs.real_pos.pos_w - PostionRegs.real_posbk.pos_w;
     // PostionRegs.out_imp.pos_u = PostionRegs.real_pos.pos_u - PostionRegs.real_posbk.pos_u;
 
-    if (time_count % 100 == 0)
-    {
-        // 每0.4*250=100ms打印一次位置
-        // printf("[INFO] 零件坐标: \n");
-        // print_pos_x_to_u(&PostionRegs.LinPos);
-        time_count = 0;
-    }
+    // if (time_count % 100 == 0)
+    // {
+    //     // 每0.4*250=100ms打印一次位置
+    //     printf("[INFO] 零件坐标: \n");
+    //     print_pos_x_to_u(&PostionRegs.LinPos);
+    //     time_count = 0;
+    // }
 
     // 间隙补偿
     if (g_bkc_flag == 1)

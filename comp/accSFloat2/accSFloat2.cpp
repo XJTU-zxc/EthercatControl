@@ -8,7 +8,7 @@
 #include "variabledef.h"
 #include "accSFloat2.h"
 
-#define deltaT 0.004
+#define deltaT 0.001
 //*************************************************************************
 void CaccSFloat2::reset()
 {

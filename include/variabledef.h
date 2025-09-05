@@ -12,6 +12,8 @@ extern "C" {
 // @brief define constants
 // @revision 1.0 by zxc on 2025-07-11
 #define SLAVE_NUM 7
+extern int act_status[SLAVE_NUM], act_mode[SLAVE_NUM], act_pos[SLAVE_NUM], act_v[SLAVE_NUM];
+
 // 定义每个轴的两个 bit 的索引位置（P/R）
 enum {
     LIMIT_XP = 0,

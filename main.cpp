@@ -22,10 +22,30 @@ const struct timespec cycletime = {0, PERIOD_NS};
 struct timespec wakeupTime;
 void cycle_task()
 {
+    // const int interval = 100;
+    // int count = 0;
+    // double total_elapsed = 0.0;
     while (true)
     {
+        struct timespec loop_start, loop_end;
+        clock_gettime(CLOCK_TO_USE, &loop_start);
+
+        clock_gettime(CLOCK_TO_USE, &wakeupTime);
+        wakeupTime = timespec_add(wakeupTime, cycletime);
         DealWith_4096us();
-        std::this_thread::sleep_for(std::chrono::microseconds(4000));
+        clock_nanosleep(CLOCK_TO_USE, TIMER_ABSTIME, &wakeupTime, NULL);
+
+        // clock_gettime(CLOCK_TO_USE, &loop_end);
+        // double elapsed = (loop_end.tv_sec - loop_start.tv_sec) + (loop_end.tv_nsec - loop_start.tv_nsec) / 1e9;
+        // total_elapsed += elapsed;
+        // count++;
+        // if (count % interval == 0)
+        // {
+        //     printf("cycle_task近%d次循环平均耗时: %.6f 秒\n", interval, total_elapsed / interval);
+        //     total_elapsed = 0.0;
+        // }
+
+        // std::this_thread::sleep_for(std::chrono::microseconds(1000));
         // if (motionFlag) {
         //     curIgHInstance->trans2OP();
         //     clock_gettime(CLOCK_TO_USE, &wakeupTime);
@@ -33,10 +53,10 @@ void cycle_task()
         //     wakeupTime = timespec_add(wakeupTime, cycletime);
         //     clock_nanosleep(CLOCK_TO_USE, TIMER_ABSTIME, &wakeupTime, NULL);
         // }
-        // // 休眠 400 微秒
+        // // 休眠 40 微秒
         // else
         // {
-        //     std::this_thread::sleep_for(std::chrono::microseconds(400));
+        //     std::this_thread::sleep_for(std::chrono::microseconds(40));
         // }
     }
 }
@@ -78,8 +98,8 @@ int main()
             /* 处理当前三指令 */
             handleThreeWords(msg);
             /* 将需要发送的消息添加进线程安全队列2中 */
-            std::cout<< "main函数打印消息内容：" <<std::endl;
-            parseMessage(g_message_cpu2arm, CStringGetLen(g_message_cpu2arm));
+            // std::cout<< "main函数打印消息内容：" <<std::endl;
+            // parseMessage(g_message_cpu2arm, CStringGetLen(g_message_cpu2arm));
             // threadSafeQueue2.push(g_message_cpu2arm);
             // 传递g_message_cpu2arm的内容副本
             threadSafeQueue2.push(std::string(g_message_cpu2arm, CStringGetLen(g_message_cpu2arm)));

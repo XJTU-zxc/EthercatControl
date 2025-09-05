@@ -27,7 +27,7 @@ public:
         if (this->free == 0) {
             return false;
         }
-        this->isLookAhead = true;
+        // this->isLookAhead = true;
         /* 放入尾部 */
         int i = (this->head + this->len) % INTERP_DATA_QUEUE_MAX_SIZE;
 
@@ -49,7 +49,11 @@ public:
         ++this->len;
         --this->free;
 
-        this->isLookAhead = false;
+        /* 进行速度前瞻 */
+        // ToDo: 可能有问题
+        // LookAhead();
+        
+        // this->isLookAhead = false;
 
         return true;
     }
@@ -250,7 +254,7 @@ private:
         }
 
         /* 反向 */
-//        int last_idx = (head + len -1) % INTERP_DATA_QUEUE_MAX_SIZE;
+        // int last_idx = (head + len -1) % INTERP_DATA_QUEUE_MAX_SIZE;
         interpDatas[tail].data.lineData.vs = last_ve;
         last_ve = 0;
         for (int i=tail, j=0; j<myLen-1; --i, ++j) {

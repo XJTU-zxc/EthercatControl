@@ -479,7 +479,7 @@ void EthercatMaster::ec_write_targetpos(int8_t p)
     }
     EC_WRITE_U16(domain_pd + slave_offset[p].op_mode, MOTOR_MODEL_CSP);
     EC_WRITE_U16(domain_pd + slave_offset[p].ctrl_word, ctrl_word);
-    EC_WRITE_S32(domain_pd + slave_offset[p].target_position, target_position);
+    EC_WRITE_S32(domain_pd + slave_offset[p].target_position, target_position*100);
 }
 
 void EthercatMaster::set_all_position(void)
@@ -495,6 +495,16 @@ void EthercatMaster::set_all_position(void)
         act_pos[i] = EC_READ_S32(domain_pd + slave_offset[i].actual_position);
         act_v[i] = EC_READ_S16(domain_pd + slave_offset[i].actual_velocity);
     }
+    // ToDo: delete
+    printf("slaves positions: ");
+    for (int i = 0; i < SLAVE_NUM; i++) {
+        printf("%d", act_pos[i]);
+        if (i < SLAVE_NUM - 1) {
+            printf(", ");
+        }
+    }
+    printf("\n");
+
     // 设置每个从站的目标位置
     for (int i = 0; i < SLAVE_NUM; i++)
     {

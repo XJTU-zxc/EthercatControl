@@ -20,7 +20,8 @@
 
 void delay2(int n)
 {
-    while (--n);
+    while (--n)
+        ;
 }
 /* STM参数，急停参数初始化 */
 int STM_EST_Lastlimit_ParamReset()
@@ -896,6 +897,249 @@ int16_t ParseParams10(Compiler *compiler, StringWrapper *wrapper, double *value)
 }
 
 /**
+ * @brief 用于参数是 m,m,,,m 类型的指令的参数解析，n 是整型，命令后面跟8个参数再加上< >两个参数
+ *
+ * @return 0 代表解析失败
+ */
+int8_t ParseParams11(Compiler *compiler, StringWrapper *wrapper, int32_t *value, int32_t *speed)
+{
+    int8_t mask = 0;
+    /* 轴计数 */
+    int axisCount = 0;
+    /* 运行状态 */
+    int rc = 0;
+    // 小于符号标记
+    int less_flag = 0;
+    /**
+     * @brief 例如指令格式为 EGR ?,?
+     */
+    do
+    {
+        /* 检查参数数字 */
+        int id = CompilerReadImportantToken(compiler, wrapper);
+
+        /* 检查 ; 或者换行 */
+        if (id == IDENTIFIER_SEMI || id == IDENTIFIER_NEWLINE1 || id == IDENTIFIER_NEWLINE2)
+        {
+            break;
+        }
+
+        if (id == IDENTIFIER_COMMA)
+        {
+            ++axisCount;
+        }
+
+        if (id != IDENTIFIER_NUMBER &&
+            id != IDENTIFIER_COMMA &&
+            id != IDENTIFIER_LESS &&
+            id != IDENTIFIER_GREATER)
+        {
+            return 0;
+        }
+
+        if (less_flag == 1)
+        {
+            if (id == IDENTIFIER_NUMBER)
+            {
+                rc = String2Int(compiler->token, compiler->tokenlen, &speed[0]);
+                if (rc < 0)
+                {
+                    return 0;
+                }
+            }
+            else
+                return 0;
+            id = CompilerReadImportantToken(compiler, wrapper);
+            if (id == IDENTIFIER_GREATER)
+            {
+                id = CompilerReadImportantToken(compiler, wrapper);
+                if (id == IDENTIFIER_NUMBER)
+                {
+                    rc = String2Int(compiler->token, compiler->tokenlen, &speed[1]);
+                    if (rc < 0)
+                    {
+                        return 0;
+                    }
+                }
+                else
+                    return 0;
+            }
+            else
+                return 0;
+
+            id = CompilerReadImportantToken(compiler, wrapper);
+            if (id == IDENTIFIER_SEMI || id == IDENTIFIER_NEWLINE1 || id == IDENTIFIER_NEWLINE2)
+            {
+                break;
+            }
+        }
+
+        if (id == IDENTIFIER_NUMBER)
+        {
+            if (axisCount >= 8)
+            {
+                return 0;
+            }
+
+            rc = String2Int(compiler->token, compiler->tokenlen, &value[axisCount]);
+            if (rc < 0)
+            {
+                return 0;
+            }
+            mask |= (1 << axisCount);
+
+            /* 如果是数字，读取结束符或者 , */
+            id = CompilerReadImportantToken(compiler, wrapper);
+            if (id == IDENTIFIER_SEMI || id == IDENTIFIER_NEWLINE1 || id == IDENTIFIER_NEWLINE2)
+            {
+                break;
+            }
+            if (id == IDENTIFIER_LESS)
+            {
+                less_flag = 1;
+            }
+
+            if (id == IDENTIFIER_COMMA)
+            {
+                ++axisCount;
+                continue;
+            }
+        }
+
+        //++axisCount;
+    } while (1);
+
+    return mask;
+}
+
+/**
+ * @brief 用于参数是 m,m,m,m 类型的指令的参数解析，n 是整型，命令后面跟4个参数再加上< >两个参数
+ *
+ * @return -1 代表解析失败
+ */
+int8_t ParseParams12(Compiler *compiler, StringWrapper *wrapper, int32_t *value, int32_t *speed)
+{
+    int8_t mask = 0;
+
+    /* 逗号计数 */
+    int axisCount = 0;
+
+    /* 运行状态 */
+    int rc = 0;
+
+    // 小于符号标记
+    int less_flag = 0;
+
+    // 命令中实际包含的轴数
+    int realcount = 0;
+
+    /**
+     * @brief 例如指令格式为 EGR ?,?
+     */
+    do
+    {
+        /* 检查参数数字 */
+        int id = CompilerReadImportantToken(compiler, wrapper);
+
+        /* 检查 ; 或者换行 */
+        if (id == IDENTIFIER_SEMI || id == IDENTIFIER_NEWLINE1 || id == IDENTIFIER_NEWLINE2)
+        {
+            break;
+        }
+
+        if (id == IDENTIFIER_COMMA)
+        {
+            ++axisCount;
+        }
+
+        if (id != IDENTIFIER_NUMBER &&
+            id != IDENTIFIER_COMMA &&
+            id != IDENTIFIER_LESS &&
+            id != IDENTIFIER_GREATER)
+        {
+            return 0;
+        }
+
+        if (less_flag == 1)
+        {
+            if (id == IDENTIFIER_NUMBER)
+            {
+                rc = String2Int(compiler->token, compiler->tokenlen, &speed[0]);
+                if (rc < 0)
+                {
+                    return 0;
+                }
+            }
+            else
+                return 0;
+            id = CompilerReadImportantToken(compiler, wrapper);
+            if (id == IDENTIFIER_GREATER)
+            {
+                id = CompilerReadImportantToken(compiler, wrapper);
+                if (id == IDENTIFIER_NUMBER)
+                {
+                    rc = String2Int(compiler->token, compiler->tokenlen, &speed[1]);
+                    if (rc < 0)
+                    {
+                        return 0;
+                    }
+                }
+                else
+                    return 0;
+            }
+            else
+                return 0;
+
+            id = CompilerReadImportantToken(compiler, wrapper);
+            if (id == IDENTIFIER_SEMI || id == IDENTIFIER_NEWLINE1 || id == IDENTIFIER_NEWLINE2)
+            {
+                break;
+            }
+        }
+
+        if (id == IDENTIFIER_NUMBER)
+        {
+
+            realcount++;
+            if (axisCount >= 4)
+            {
+                return 0;
+            }
+
+            rc = String2Int(compiler->token, compiler->tokenlen, &value[axisCount]);
+            if (rc < 0)
+            {
+                return 0;
+            }
+            mask |= (1 << axisCount);
+
+            /* 如果是数字，读取结束符或者 , */
+            id = CompilerReadImportantToken(compiler, wrapper);
+            if (id == IDENTIFIER_SEMI || id == IDENTIFIER_NEWLINE1 || id == IDENTIFIER_NEWLINE2)
+            {
+                break;
+            }
+            if (id == IDENTIFIER_LESS)
+            {
+                less_flag = 1;
+            }
+
+            if (id == IDENTIFIER_COMMA)
+            {
+                ++axisCount;
+                continue;
+            }
+        }
+
+    } while (1);
+
+    if (realcount != 4)
+        return -1;
+
+    return 0;
+}
+
+/**
  * @brief VSR 的指令格式为 VSR s。以分号或者空格
  * */
 int Command_VSR(struct Compiler *compiler, struct StringWrapper *wrapper, bool isMdi)
@@ -1722,12 +1966,11 @@ int Command_TCP(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     array[0] = mask;
 
     /* 根据 mask 的值读取指令位置 */
-    while (nbarray < 9)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
-        int16_t bits = (mask & (1 << (nbarray - 1)));
-        if (bits != 0)
+        if (mask & (1 << i))
         {
-            array[nbarray++] = *g_params_axisRealPositionPtr[nbarray - 1];
+            array[nbarray++] = *g_params_axisRealPositionPtr[i];
         }
     }
 
@@ -1906,37 +2149,12 @@ int Command_TCE(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     array[0] = mask;
-    if (mask & 0x01)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
-        array[nbarray++] = robotCore.encode.x.curr;
-    }
-    if (mask & 0x02)
-    {
-        array[nbarray++] = robotCore.encode.y.curr;
-    }
-    if (mask & 0x04)
-    {
-        array[nbarray++] = robotCore.encode.z.curr;
-    }
-    if (mask & 0x08)
-    {
-        array[nbarray++] = robotCore.encode.a.curr;
-    }
-    if (mask & 0x10)
-    {
-        array[nbarray++] = robotCore.encode.b.curr;
-    }
-    if (mask & 0x20)
-    {
-        array[nbarray++] = robotCore.encode.c.curr;
-    }
-    if (mask & 0x40)
-    {
-        array[nbarray++] = robotCore.encode.u.curr;
-    }
-    if (mask & 0x80)
-    {
-        array[nbarray++] = robotCore.encode.w.curr;
+        if (mask & (1 << i))
+        {
+            array[nbarray++] = act_pos[i];
+        }
     }
 
     /* 返回消息 */
@@ -2009,14 +2227,19 @@ int Command_VLI(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
         return -1;
     }
 
+    // for (int i = 0; i < SLAVE_NUM; ++i)
+    // {
+    //     g_command_position[i] += value[i];
+    // }
+
     long double dist = 0;
     for (int i = 0; i < SLAVE_NUM; ++i)
     {
         dist += (long double)value[i] * (long double)value[i];
     }
-
     dist = sqrtl(dist);
-    double k[8] = {0}; // k为各插补轴的比例
+    double k[SLAVE_NUM] = {0}; // k为各插补轴的比例
+
     for (int i = 0; i < SLAVE_NUM; ++i)
     {
         int16_t bits = (mask & (1 << i));
@@ -2025,17 +2248,44 @@ int Command_VLI(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
             k[i] = value[i] / dist;
         }
     }
+    // if((g_vli_speed[0]+g_vli_speed[1]) != 0)
+    // {
+    //     ipcLineData.vs = pre_g_vli_speed[1];
+    //     ipcLineData.vm = g_vli_speed[0];
+    //     ipcLineData.ve = g_vli_speed[1];
+    //     ipcLineData.am = g_params_vac * g_params_vac_coeff;
+    //     ipcLineData.dist = dist;
 
-    /* 参数赋值并发送给CPU2 */
-    ipcLineData.vs = 0;
-    ipcLineData.vm = g_params_vsp * g_params_vsr;
-    ipcLineData.ve = 0;
-    ipcLineData.am = g_params_vac * g_params_vac_coeff;
-    ipcLineData.dist = dist;
-    for (int i = 0; i < SLAVE_NUM; i++)
-    {
-        ipcLineData.unitVec[i] = k[i];
-    }
+    //     pre_g_vli_speed[1] = g_vli_speed[1];
+    // }
+    // else
+    // {
+    //     ipcLineData.vs = pre_g_vli_speed[1];
+    //     ipcLineData.vm = g_params_vsp * g_params_vsr;
+    //     ipcLineData.ve = g_params_vsp * g_params_vsr;
+    //     ipcLineData.am = g_params_vac * g_params_vac_coeff;
+    //     ipcLineData.dist = dist;
+
+    //     pre_g_vli_speed[1] = g_params_vsp * g_params_vsr;
+    // }
+
+    // for (int i = 0; i < SLAVE_NUM; i++)
+    // {
+    //     ipcLineData.unitVec[i] = k[i];
+    // }
+
+    // for (int i = 0; i < sizeof(struct IpcLineData) / sizeof(uint16_t); i++)
+    // {
+    //     CPU1Send[i] = ((uint16_t *)&ipcLineData)[i];
+    //     dataUnion.array[i] = CPU1Send[i];
+    // }
+
+    // Push(pmc_real_t vs, pmc_real_t vm, pmc_real_t am, pmc_real_t ve, pmc_real_t dist,
+    //      pmc_real_t ua, pmc_real_t ub, pmc_real_t uc, pmc_real_t ud,
+    //      pmc_real_t ue, pmc_real_t uf, pmc_real_t ug, pmc_real_t uh)
+    g_interpDataQueue.Push(0, g_params_vsp * g_params_vsr, g_params_vac * g_params_vac_coeff, 0,
+                           dist, k[0], k[1], k[2], k[3], k[4], k[5], k[6], k[7]);
+
     interpNum++;
     /* 返回 OK 消息 */
     if (isMdi)
@@ -2198,7 +2448,6 @@ int Command_MSP(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
             bpmParams.msp[i] = ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i];
             bpmParams.HasMspParam[i] = 1;
             printf("[SET] slave[%d].speed = %f\n", i, ParamterUnRegs.ParamterRegs.AxisparmRegs.FastMoveSpeed[i]);
-
         }
     }
 
@@ -2353,8 +2602,8 @@ int Command_SET(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     //     else if(temp > 16 && temp <= 32)
     //         ThreeWordsReg.IOHigh |= (flag << (temp - 17));
 
-        // CToMRegs.IOdata[0] = ThreeWordsReg.IOLow;
-        // CToMRegs.IOdata[1] = ThreeWordsReg.IOHigh;
+    // CToMRegs.IOdata[0] = ThreeWordsReg.IOLow;
+    // CToMRegs.IOdata[1] = ThreeWordsReg.IOHigh;
 
     //     IPC_sendCommand(IPC_CPU1_L_CM_R, IPC_FLAG7, IPC_ADDR_CORRECTION_ENABLE, 1, 0, 2);
     //     IPC_setFlagLtoR(IPC_CPU1_L_CM_R, IPC_FLAG7);
@@ -2422,6 +2671,13 @@ int Command_TER(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
     array[0] = mask;
     /* 根据 mask 的值读取指令位置 */
+    // for (int i = 0; i < SLAVE_NUM; ++i)
+    // {
+    //     if (mask & (1 << i))
+    //     {
+    //         array[nbarray++] = *g_params_axisRealPositionPtr[i] - ;
+    //     }
+    // }
     if (mask & 0x01)
     {
         array[nbarray++] = PostionRegs.real_pos.pos_x - robotCore.encode.x.curr;
@@ -2481,39 +2737,15 @@ int Command_TCV(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
     array[0] = mask;
     /* 根据 mask 的值读取指令位置 */
-    double coeff = 1000000 / (SpeedFilterQueue::SPEED_FILTER_BUFFER_SIZE * 500); /* 换算系数，500 是 500 us 读一次编码器的值 */
+    // double coeff = 1000000 / (SpeedFilterQueue::SPEED_FILTER_BUFFER_SIZE * 500); /* 换算系数，500 是 500 us 读一次编码器的值 */
 
-    if (mask & 0x01)
+    for (int i = 0; i < SLAVE_NUM; ++i)
     {
-        array[nbarray++] = g_speedFilterQueueA.Get() * coeff;
-    }
-    if (mask & 0x02)
-    {
-        array[nbarray++] = g_speedFilterQueueB.Get() * coeff;
-    }
-    if (mask & 0x04)
-    {
-        array[nbarray++] = g_speedFilterQueueC.Get() * coeff;
-    }
-    if (mask & 0x08)
-    {
-        array[nbarray++] = g_speedFilterQueueD.Get() * coeff;
-    }
-    if (mask & 0x10)
-    {
-        array[nbarray++] = g_speedFilterQueueE.Get() * coeff;
-    }
-    if (mask & 0x20)
-    {
-        array[nbarray++] = g_speedFilterQueueF.Get() * coeff;
-    }
-    if (mask & 0x40)
-    {
-        array[nbarray++] = g_speedFilterQueueG.Get() * coeff;
-    }
-    if (mask & 0x80)
-    {
-        array[nbarray++] = g_speedFilterQueueH.Get() * coeff;
+        if (mask & (1 << i))
+        {
+            array[nbarray++] = act_v[i];
+            // array[nbarray++] = g_speedFilterQueueA.Get() * coeff;
+        }
     }
 
     if (isMdi)
@@ -2877,8 +3109,10 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
 
     mask = ParseParams7(compiler, wrapper, order, &nbOrder);
     /* 参数解析失败 */
-    if (mask == 0) {
-        if (isMdi) {
+    if (mask == 0)
+    {
+        if (isMdi)
+        {
             CStringAddRespFail(g_message_cpu2arm);
         }
         g_params_tec = TEC_ERROR_PROGRAM;
@@ -2887,8 +3121,10 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     /* 如果轴正在运动，报错 */
-    if (g_axis_is_running != 0 || g_params_interp_is_running != 0) {
-        if (isMdi) {
+    if (g_axis_is_running != 0 || g_params_interp_is_running != 0)
+    {
+        if (isMdi)
+        {
             CStringAddRespFail(g_message_cpu2arm);
         }
 
@@ -2898,8 +3134,10 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     }
 
     /* 如果已经设置了 VIC ，报错 */
-    if (g_params_interp_axis_enable != 0) {
-        if (isMdi) {
+    if (g_params_interp_axis_enable != 0)
+    {
+        if (isMdi)
+        {
             CStringAddRespFail(g_message_cpu2arm);
         }
 
@@ -2924,19 +3162,24 @@ int Command_VIC(struct Compiler *compiler, struct StringWrapper *wrapper, bool i
     /* 使能插补轴 */
     g_params_interp_axis_enable = mask;
     char map[8] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-    if (order[2] == -1) {
+    if (order[2] == -1)
+    {
         printf("[INFO] 解析顺序为：%c, %c\n", map[order[0]], map[order[1]]);
-    } else {
+    }
+    else
+    {
         printf("[INFO] 解析顺序为：%c, %c, %c\n", map[order[0]], map[order[1]], map[order[2]]);
     }
 
     /* 检测是否进行了三轴联动，只有三轴情况下才可以实现正切wyf */
-    if (nbOrder == 3) {
+    if (nbOrder == 3)
+    {
         g_params_tangent_available = 1;
     }
 
     /* 添加返回消息 */
-    if (isMdi) {
+    if (isMdi)
+    {
         CStringAddRespOk(g_message_cpu2arm);
     }
 

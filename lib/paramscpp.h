@@ -40,7 +40,7 @@ extern ThreadSafeQueue<std::string>  threadSafeQueue2;
 #include <string>
 #include <cstring>
 
-// 解析函数
+// 解析函数 by zxc for test
 inline void parseMessage(const char* message, int len) {
     std::string msg(message, len);
     std::istringstream iss(msg);

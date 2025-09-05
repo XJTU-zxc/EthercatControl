@@ -14,7 +14,15 @@ public:
 
     bool Plan()
     {
-        float nm = am / (PMC_J * PMC_T);
+        float nm = am / (PMC_J * PMC_T); // am = (default)500
+        // int SCurvePlanner::Plan(double l, double vs, double vm, double ve, double j, double nm, double ts)
+        // @param l: 合运动距离，VLI P1, P2，传入dist = sqrt(P1^2 + P2^2)
+        // @param vs: 起点速度，default=0
+        // @param vm: 最大速度，default=10000*0.655738=6557.38
+        // @param ve: 终点速度，default=0
+        // @param j: 加加速度，default=5000
+        // @param nm: 最大加加速度周期数，default=am / (PMC_J * PMC_T)=500/(5000*0.001)=100
+        // @param ts: 插补周期，default=0.001
         sp.Plan(dist, vs, vm, ve, PMC_J, nm, PMC_T);
         hasPlan = true;
         return true;

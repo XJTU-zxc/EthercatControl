@@ -101,7 +101,7 @@ void handleClient(int clientSocket)
             {
                 // 从队列中弹出数据
                 std::string reMsg = threadSafeQueue2.pop();
-                printf("发送消息：%s\n", reMsg.c_str());
+                // printf("发送消息：%s\n", reMsg.c_str());
 
                 // 发送消息给客户端
                 ssize_t bytesSent = send(clientSocket, reMsg.c_str(), reMsg.size(), 0);
